@@ -21,7 +21,7 @@ class CrossoverTypesEnum(Enum):
     subtree = 'subtree'
     one_point = "one_point"
     none = 'none'
-
+    gg_subtree = 'subtree'
 
 CrossoverCallable = Callable[[OptGraph, OptGraph, int], Tuple[OptGraph, OptGraph]]
 
@@ -78,6 +78,7 @@ class Crossover(Operator):
         crossovers = {
             CrossoverTypesEnum.subtree: subtree_crossover,
             CrossoverTypesEnum.one_point: one_point_crossover,
+            CrossoverTypesEnum.gg_subtree: gg_subtree,
         }
         if crossover_type in crossovers:
             return crossovers[crossover_type]
@@ -113,6 +114,36 @@ def subtree_crossover(graph_first: OptGraph, graph_second: OptGraph, max_depth: 
 
     return graph_first, graph_second
 
+@register_native
+def gg_subtree(graph_first: OptGraph, graph_second: OptGraph, max_depth: int) -> Tuple[OptGraph, OptGraph]:
+    """Performed by the replacement of random subtree
+    in first selected parent to random subtree from the second parent"""
+    is_not_joint = lambda i : i.content["Node"].label[0] != "J"
+    is_not_T = lambda i : i.content["Node"].label[0] != "T"
+    condition = lambda i : is_not_joint(i) and is_not_T(i)
+    TRY_LUCKY_RANDOM = 100
+    first_layer_rand = []
+    second_layer_rand = []
+    for i in range(TRY_LUCKY_RANDOM):
+        random_layer_in_graph_first = choice(range(graph_first.depth))
+        min_second_layer = 1 if random_layer_in_graph_first == 0 and graph_second.depth > 1 else 0
+        random_layer_in_graph_second = choice(range(min_second_layer, graph_second.depth))
+        
+        first_layer_rand = nodes_from_layer(graph_first, random_layer_in_graph_first)
+        second_layer_rand = nodes_from_layer(graph_second, random_layer_in_graph_second)
+        first_layer_rand = list(filter(condition, first_layer_rand))
+        second_layer_rand = list(filter(condition, second_layer_rand))
+        if len(first_layer_rand)!=0 and len(second_layer_rand) != 0:
+            node_from_graph_first = choice(first_layer_rand)
+            node_from_graph_second = choice(second_layer_rand)
+            replace_subtrees(graph_first, graph_second, node_from_graph_first, node_from_graph_second,
+                     random_layer_in_graph_first, random_layer_in_graph_second, max_depth)
+        
+
+
+
+
+    return graph_first, graph_second
 
 @register_native
 def one_point_crossover(graph_first: OptGraph, graph_second: OptGraph, max_depth: int) -> Tuple[OptGraph, OptGraph]:
