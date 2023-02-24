@@ -118,8 +118,8 @@ def subtree_crossover(graph_first: OptGraph, graph_second: OptGraph, max_depth: 
 def gg_subtree(graph_first: OptGraph, graph_second: OptGraph, max_depth: int) -> Tuple[OptGraph, OptGraph]:
     """Performed by the replacement of random subtree
     in first selected parent to random subtree from the second parent"""
-    is_not_joint = lambda i : i.content["Node"].label[0] != "J"
-    is_not_T = lambda i : i.content["Node"].label[0] != "T"
+    is_not_joint = lambda i : not "ChronoRevolveJoint" in str(i.content["Node"].block_wrapper.block_cls) 
+    is_not_T = lambda i : not "ChronoTransform" in str(i.content["Node"].block_wrapper.block_cls)
     condition = lambda i : is_not_joint(i) and is_not_T(i)
     TRY_LUCKY_RANDOM = 100
     first_layer_rand = []
