@@ -8,13 +8,13 @@ HERE = Path(__file__).parent.resolve()
 
 # The text of the README file
 NAME = 'thegolem'
-VERSION = '0.1.0'
+VERSION = '0.2.0'
 AUTHOR = 'NSS Lab'
 SHORT_DESCRIPTION = 'Framework for Graph Optimization and Learning by Evolutionary Methods'
 
 README = Path(HERE, 'README_en.rst').read_text(encoding='utf-8')
 URL = 'https://github.com/aimclub/GOLEM'
-REQUIRES_PYTHON = '>=3.7'
+REQUIRES_PYTHON = '>=3.8'
 LICENSE = 'BSD 3-Clause'
 
 
@@ -53,8 +53,8 @@ setuptools.setup(
     },
     classifiers=[
         'License :: OSI Approved :: BSD License',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9'
+        'Programming Language :: Python :: 3.10'
     ],
 )

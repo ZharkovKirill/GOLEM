@@ -11,7 +11,8 @@ from golem.core.optimisers.genetic.evaluation import MultiprocessingDispatcher
 from golem.core.optimisers.genetic.gp_optimizer import EvoGraphOptimizer
 from golem.core.optimisers.genetic.gp_params import GPAlgorithmParameters
 from golem.core.optimisers.genetic.operators.crossover import CrossoverTypesEnum, Crossover
-from golem.core.optimisers.genetic.operators.mutation import MutationTypesEnum, Mutation
+from golem.core.optimisers.genetic.operators.mutation import Mutation
+from golem.core.optimisers.genetic.operators.base_mutations import MutationTypesEnum
 from golem.core.optimisers.graph import OptGraph, OptNode
 from golem.core.optimisers.objective import Objective, ObjectiveEvaluate
 from golem.core.optimisers.opt_history_objects.individual import Individual
@@ -291,7 +292,7 @@ def test_collect_intermediate_metric():
 
     objective_eval = MockObjectiveEvaluate(Objective({'rand_metric': metric}))
     dispatcher = MultiprocessingDispatcher(graph_gen_params.adapter)
-    dispatcher.set_evaluation_callback(objective_eval.evaluate_intermediate_metrics)
+    dispatcher.set_graph_evaluation_callback(objective_eval.evaluate_intermediate_metrics)
     evaluate = dispatcher.dispatch(objective_eval)
 
     population = [create_individual(evaluated=False)]

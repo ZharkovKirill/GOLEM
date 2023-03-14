@@ -33,22 +33,24 @@ class LinkedGraph(Graph, Copyable):
     def _empty_postprocess(*args):
         pass
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.delete_node)
     def delete_node(self, node: GraphNode):
         node_children_cached = self.node_children(node)
-        self_root_node_cached = self.root_node
 
-        for node_child in self.node_children(node):
+        self._nodes.remove(node)
+        for node_child in node_children_cached:
             node_child.nodes_from.remove(node)
 
+        # if removed node had a single child
+        # then reconnect it to preceding parent nodes.
         if node.nodes_from and len(node_children_cached) == 1:
+            child = node_children_cached[0]
             for node_from in node.nodes_from:
-                node_children_cached[0].nodes_from.append(node_from)
-        self._nodes.clear()
-        self.add_node(self_root_node_cached)
+                child.nodes_from.append(node_from)
+
         self._postprocess_nodes(self, self._nodes)
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.delete_subtree)
     def delete_subtree(self, subtree: GraphNode):
         subtree_nodes = ordered_subnodes_hierarchy(subtree)
         self._nodes = remove_items(self._nodes, subtree_nodes)
@@ -56,7 +58,7 @@ class LinkedGraph(Graph, Copyable):
         for subtree in self._nodes:
             subtree.nodes_from = remove_items(subtree.nodes_from, subtree_nodes)
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.update_node)
     def update_node(self, old_node: GraphNode, new_node: GraphNode):
         self.actualise_old_node_children(old_node, new_node)
         new_node.nodes_from.extend(old_node.nodes_from)
@@ -65,7 +67,7 @@ class LinkedGraph(Graph, Copyable):
         self.sort_nodes()
         self._postprocess_nodes(self, self._nodes)
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.update_subtree)
     def update_subtree(self, old_subtree: GraphNode, new_subtree: GraphNode):
         new_subtree = deepcopy(new_subtree)
         self.actualise_old_node_children(old_subtree, new_subtree)
@@ -73,7 +75,7 @@ class LinkedGraph(Graph, Copyable):
         self.add_node(new_subtree)
         self.sort_nodes()
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.add_node)
     def add_node(self, node: GraphNode):
         if node not in self._nodes:
             self._nodes.append(node)
@@ -96,13 +98,13 @@ class LinkedGraph(Graph, Copyable):
         if not isinstance(self.root_node, Sequence):
             self._nodes = ordered_subnodes_hierarchy(self.root_node)
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.node_children)
     def node_children(self, node: GraphNode) -> List[Optional[GraphNode]]:
         return [other_node for other_node in self._nodes
                 if other_node.nodes_from and
                 node in other_node.nodes_from]
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.connect_nodes)
     def connect_nodes(self, node_parent: GraphNode, node_child: GraphNode):
         if node_child in self.node_children(node_parent):
             return
@@ -121,7 +123,7 @@ class LinkedGraph(Graph, Copyable):
             for node in node.nodes_from:
                 self._clean_up_leftovers(node)
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.disconnect_nodes)
     def disconnect_nodes(self, node_parent: GraphNode, node_child: GraphNode,
                          clean_up_leftovers: bool = True):
         if node_parent not in node_child.nodes_from:
@@ -144,23 +146,23 @@ class LinkedGraph(Graph, Copyable):
     def nodes(self, new_nodes: List[GraphNode]):
         self._nodes = new_nodes
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.__eq__)
     def __eq__(self, other_graph: Graph) -> bool:
         return \
             set(rn.descriptive_id for rn in self.root_nodes()) == \
             set(rn.descriptive_id for rn in other_graph.root_nodes())
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.descriptive_id)
     @property
     def descriptive_id(self) -> str:
         return ''.join([r.descriptive_id for r in self.root_nodes()])
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.depth)
     @property
     def depth(self) -> int:
         return 0 if not self._nodes else max(map(node_depth, self.root_nodes()))
 
-    @copy_doc(Graph)
+    @copy_doc(Graph.get_edges)
     def get_edges(self) -> Sequence[Tuple[GraphNode, GraphNode]]:
         edges = []
         for node in self._nodes:
